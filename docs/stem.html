@@ -308,7 +308,7 @@ div.tocify {
 
 
 <p><strong>Last updated:</strong> 2017-02-24</p>
-<p><strong>Code version:</strong> 5afe0b8</p>
+<p><strong>Code version:</strong> eef045d</p>
 <div id="data-description" class="section level2">
 <h2>Data description</h2>
 <p>We have gene expression (microarray) data from <a href="http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1005793">Burrows et al (2016), “Genetic Variation, Not Cell Type of Origin, Underlies the Majority of Identifiable Regulatory Differences in iPSCs”</a>.</p>
@@ -318,7 +318,7 @@ div.tocify {
 </div>
 <div id="data-analysis" class="section level2">
 <h2>Data analysis</h2>
-<p>We use the naive F-test (ANOVA) and FASH to analyze the proportion of variance explained by cell type or individual. Specifically, we assume that gene expression <span class="math inline">\(y_{gij}\)</span> comes from the following model: <span class="math display">\[y_{gij} = \mu_g+\beta_{g,c(i)}+\gamma_{g,d(j)}+e_{gij},\]</span> where <span class="math inline">\(g,i,j\)</span> are the indices for gene, individual and cell type respectively. <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\gamma\)</span> are random effects for individuals and celltypes respectively. Suppose <span class="math inline">\(\beta_{g,c(i)}\sim N(0,v_{g}^{(ind)}\)</span>, <span class="math inline">\(\gamma_{g,c(i)}\sim N(0,v_{g}^(ct)\)</span> and <span class="math inline">\(e_{gij}\sim N(0, v_{g}^{(err)})\)</span>, we are interested in estimating the “PVE”s defined as follows: <span class="math display">\[PVE_g^{(ind)}:=\frac{v_{g}^{(ind)}{v_{g}^{(ind)}+v_{g}^{(ct)}+v_{g}^{(err)}},\]</span> <span class="math display">\[PVE_g^{(ct)}:=\frac{v_{g}^{(ct)}{v_{g}^(ind)+v_{g}^{(ct)}+v_{g}^{(err)}}\]</span>.</p>
+<p>We use the naive F-test (ANOVA) and FASH to analyze the proportion of variance explained by cell type or individual. Specifically, we assume that gene expression <span class="math inline">\(y_{gij}\)</span> comes from the following model: <span class="math display">\[y_{gij} = \mu_g+\beta_{g,c(i)}+\gamma_{g,d(j)}+e_{gij},\]</span> where <span class="math inline">\(g,i,j\)</span> are the indices for gene, individual and cell type respectively. <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\gamma\)</span> are random effects for individuals and celltypes respectively. Suppose <span class="math inline">\(\beta_{g,c(i)}\sim N(0,v_{g}^{(ind)}\)</span>, <span class="math inline">\(\gamma_{g,c(i)}\sim N(0,v_{g}^(ct)\)</span> and <span class="math inline">\(e_{gij}\sim N(0, v_{g}^{(err)})\)</span>, we are interested in estimating the “PVE”s defined as follows: <span class="math display">\[PVE_g^{(ind)}:=\frac{v_{g}^{(ind)}{v_{g}^{(ind)}+v_{g}^{(ct)}+v_{g}^{(err)}},\]</span> <span class="math display">\[PVE_g^{(ct)}:=\frac{v_{g}^{(ct)}{v_{g}^{(ind)}+v_{g}^{(ct)}+v_{g}^{(err)}}.\]</span></p>
 <p>Below are the R functions for our data analysis:</p>
 <pre class="r"><code>library(limma)
 library(qvalue)
