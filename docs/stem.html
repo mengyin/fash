@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Use FASH to analyze the stem cell gene expression data</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-1.1/highlight.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">fash</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jdblischak/workflowr">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Use FASH to analyze the stem cell gene expression data</h1>
+
+</div>
+
+
+<div id="data-description" class="section level2">
+<h2>Data description</h2>
+<p>Data from Burrows et al (2016), “Genetic Variation, Not Cell Type of Origin, Underlies the Majority of Identifiable Regulatory Differences in iPSCs”.</p>
+<p>There are four individuals - Ind1, Ind2, Ind3, Ind4 Each individual has four samples types - Fibroblast, LCL, F-iPSC, L-iPSC -There are three replicates of the L-iPSCs A-C</p>
+<p>L-iPSC referes to iPSCs derived from LCLs, F-iPSC refers to iPSCs derived from Fibroblasts.</p>
+<p>They were interested in the proportion of variation explained by cell type of origin vs the proportion of variation explained by individual in the iPSCs. They performed a linear mixed model with a fixed effect for cell type of origin (ie L-iPSC vs F-iPSC) and a random effect for individual. This model did no use the LCLs or the Fibroblasts from these individuals.</p>
+</div>
+<div id="data-analysis" class="section level2">
+<h2>Data analysis</h2>
+<p>First we define functions for our data analysis:</p>
+<pre class="r"><code>library(limma)
+library(qvalue)
+library(ashr)
+
+# naive F test for a single gene
+get_fstat = function(y,condition1,condition2){
+  fit = lm(y~condition1+condition2)
+  fstat1 = anova(fit)$F[1]
+  fstat2 = anova(fit)$F[2]
+  MST1 = anova(fit)$M[1]
+  MST2 = anova(fit)$M[2]
+  MSE = anova(fit)$M[3]
+  pval1 = unlist(anova(fit)[&quot;Pr(&gt;F)&quot;])[1]
+  pval2 = unlist(anova(fit)[&quot;Pr(&gt;F)&quot;])[2]
+  res = c(fstat1,fstat2,MST1,MST2,MSE,pval1,pval2)
+  names(res) = c(&quot;fstat1&quot;,&quot;fstat2&quot;,&quot;MST1&quot;,&quot;MST2&quot;,&quot;MSE&quot;,&quot;pval1&quot;,&quot;pval2&quot;)
+  return(res)
+}
+
+# Variance ratio from the raw MSTs &amp; MSEs
+vr_ftest = function(nsamp,MST,MSE){
+  sigma.c2.hat = pmax(0,(MST-MSE)/nsamp)
+  sigma.e2.hat = MSE
+  return(sigma.c2.hat/sigma.e2.hat)
+}
+
+# Variance ratio = sigma^2/s^2
+# logalpha = (1+nsamp*sigma^2/s^2)
+# So: VR = (exp(logalpha)-1)/nsamp
+vr_plugin = function(nsamp,fashobj){
+  (exp(fashobj$result$PosteriorMean)-1)/nsamp
+}
+
+# main function for computing the PVEs
+pve_analysis = function(data){
+  celltype1 = factor(rep(c(&quot;F&quot;,&quot;L&quot;), each=4))
+  individual1 = factor(rep(1:4, 2))
+  design1 = model.matrix(~celltype1+individual1)
+  
+  # naive F tests
+  ftests = apply(data,1,get_fstat,condition1=celltype1,condition2=individual1)
+  vr.ct.ftest = vr_ftest(4, ftests[&quot;MST1&quot;,],ftests[&quot;MSE&quot;,])
+  vr.ind.ftest = vr_ftest(2, ftests[&quot;MST2&quot;,],ftests[&quot;MSE&quot;,])
+  
+  # fash
+  lim = lmFit(data, design=design1)
+  lim.ct = eBayes(lim[,2])
+  Fstats.ct = lim.ct$F # shrunk F stats
+  Fpval.ct = lim.ct$F.p.value
+  fash.ct = ash(log(Fstats.ct),1,
+                lik=logF_lik(df1=1,df2=lim.ct$df.total[1]),mixcompdist=&quot;+uniform&quot;)
+  vr.ct.fash = vr_plugin(4, fash.ct)
+
+  lim.ind = eBayes(lim[,3:5])
+  Fstats.ind = lim.ind$F # shrunk F stats
+  Fpval.ind = lim.ind$F.p.value
+  fash.ind = ash(log(Fstats.ind),1,
+                 lik=logF_lik(df1=3,df2=lim.ind$df.total[1]),mixcompdist=&quot;+uniform&quot;)
+  vr.ind.fash = vr_plugin(2, fash.ind)
+  
+  # compute PVEs from variance ratios
+  pve.ct.fash = vr.ct.fash/(vr.ct.fash+vr.ind.fash+1)
+  pve.ct.ftest = vr.ct.ftest/(vr.ct.ftest+vr.ind.ftest+1)
+  pve.ind.fash = vr.ind.fash/(vr.ct.fash+vr.ind.fash+1)
+  pve.ind.ftest = vr.ind.ftest/(vr.ct.ftest+vr.ind.ftest+1)
+  
+  # boxplot
+  boxplot(pve.ct.fash, pve.ct.ftest, pve.ind.fash, pve.ind.ftest,
+        names=c(&quot;ct.fash&quot;,&quot;ct.ftest&quot;,&quot;ind.fash&quot;,&quot;ind.ftest&quot;),
+        main=&quot;PVE of celltypes (ct) and individuals (ind)&quot;)
+
+  return(list(pve.ind.ftest=pve.ind.ftest, pve.ind.fash=pve.ind.fash,
+              pve.ct.ftest=pve.ct.ftest, pve.ct.fash=pve.ct.fash))
+}</code></pre>
+<p>This dataset has unbalanced design (three L-iPSC replicates but just one F-iPSC sample). However it is not straightforward to use FASH on unbalanced dataset for PVE analysis. Hence we choose an ad-hoc way: each time we simply use one of the three L-iPSC replicates to form a balanced dataset, and compare the results of three trials.</p>
+<pre class="r"><code>geneexp = read.delim(&quot;../data/OriginGeneExpression_Normalized.txt&quot;)
+geneexp.A = geneexp[,c(&quot;Ind1.F.iPSC&quot;,&quot;Ind2.F.iPSC&quot;,&quot;Ind3.F.iPSC&quot;,&quot;Ind4.F.iPSC&quot;,
+                     &quot;Ind1.L.iPSC.A&quot;,&quot;Ind2.L.iPSC.A&quot;,&quot;Ind3.L.iPSC.A&quot;,&quot;Ind4.L.iPSC.A&quot;)]
+geneexp.B = geneexp[,c(&quot;Ind1.F.iPSC&quot;,&quot;Ind2.F.iPSC&quot;,&quot;Ind3.F.iPSC&quot;,&quot;Ind4.F.iPSC&quot;,
+                     &quot;Ind1.L.iPSC.B&quot;,&quot;Ind2.L.iPSC.B&quot;,&quot;Ind3.L.iPSC.B&quot;,&quot;Ind4.L.iPSC.B&quot;)]
+geneexp.C = geneexp[,c(&quot;Ind1.F.iPSC&quot;,&quot;Ind2.F.iPSC&quot;,&quot;Ind3.F.iPSC&quot;,&quot;Ind4.F.iPSC&quot;,
+                     &quot;Ind1.L.iPSC.C&quot;,&quot;Ind2.L.iPSC.C&quot;,&quot;Ind3.L.iPSC.C&quot;,&quot;Ind4.L.iPSC.C&quot;)]
+
+A = pve_analysis(geneexp.A)</code></pre>
+<p><img src="stem_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>B = pve_analysis(geneexp.B)</code></pre>
+<pre><code>## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable
+
+## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable
+
+## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable
+
+## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable
+
+## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable
+
+## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable
+
+## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable</code></pre>
+<p><img src="stem_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+<pre class="r"><code>C = pve_analysis(geneexp.C)</code></pre>
+<pre><code>## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable
+
+## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable
+
+## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable
+
+## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable
+
+## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable
+
+## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable
+
+## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+## unreliable</code></pre>
+<p><img src="stem_files/figure-html/unnamed-chunk-2-3.png" width="672" /></p>
+<p>According to fash results, both datasets with L-iPSC replicate A or C suggest that gene “ENSG00000198825” is differentially expressed under different celltypes (FDR=0.05), but the dataset with L-iPSC replicate B does not any give significant genes (FDR=0.05). We can check this according to fash results:</p>
+<pre class="r"><code>geneexp[which.max(A$pve.ct.fash),]</code></pre>
+<pre><code>##                 Ind1.F.iPSC Ind2.L.iPSC.C Ind3.L.iPSC.B Ind1.LCL
+## ENSG00000198825     7.97047      6.902654      6.945877 7.151865
+##                 Ind4.L.iPSC.C Ind2.L.iPSC.B Ind4.L.iPSC.A Ind1.Fibroblast
+## ENSG00000198825      6.920788      8.395853      6.922644         7.12799
+##                 Ind1.L.iPSC.A Ind4.Fibroblast Ind2.LCL Ind3.F.iPSC
+## ENSG00000198825      6.997868        7.122821 7.131635    8.029191
+##                 Ind2.Fibroblast Ind3.LCL Ind2.L.iPSC.A Ind4.LCL
+## ENSG00000198825        7.067461 7.097692      6.900132 7.257512
+##                 Ind3.Fibroblast Ind1.L.iPSC.C Ind2.F.iPSC Ind3.L.iPSC.A
+## ENSG00000198825        7.115315      7.044821    7.757269      7.045194
+##                 Ind1.L.iPSC.B Ind4.L.iPSC.B Ind3.L.iPSC.C Ind4.F.iPSC
+## ENSG00000198825      6.969298      6.974893      7.049418    7.896776</code></pre>
+<p>For individual 2, L-iPSC replicate B’s gene expression level is much higher (&gt;1.4) than that of replicates A and C. Compared to typical gene expression variation within L-iPSC replicates, this seems very suspicious.</p>
+<pre class="r"><code>hist(apply(geneexp[,c(&quot;Ind2.L.iPSC.A&quot;,&quot;Ind2.L.iPSC.B&quot;,&quot;Ind2.L.iPSC.C&quot;)],1,sd),
+     xlab=&quot;sd of replicates A-C for ind2&quot;,
+     main=&quot;Histogram of sd&quot;)</code></pre>
+<p><img src="stem_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+
+<hr>
+<p>
+    This <a href="http://rmarkdown.rstudio.com">R Markdown</a> site was created with <a href="https://github.com/jdblischak/workflowr">workflowr</a>
+</p>
+<hr>
+
+<!-- To enable disqus, uncomment the section below and provide your disqus_shortname -->
+
+<!-- disqus
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'rmarkdown'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+-->
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Shrinkage analysis of fMRI data</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-1.1/highlight.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">fash</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/jdblischak/workflowr">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Shrinkage analysis of fMRI data</h1>
+
+</div>
+
+
+<div id="data-description-and-visualization" class="section level2">
+<h2>Data description and visualization</h2>
+<p>This is a 3D dataset. 21 images each of dimension 64x64. Each image is a so-called Axial slice i.e imagine salami slicing your brain from top of your head to the bottom. Each slice is 6mm thick.</p>
+<p>This is the result of an fMRI experiment on a single person. While in the scanner the person was stimulated (visual and auditory stimulation). A time series of length 180 was collected at each location in the brain and then a regression is performed at each location, using the stimulation patterns as regressors. 3 other regressors were used which can be thought of as confounders. The resulting test statistic is F with df1=2 and df2=175.</p>
+<pre class="r"><code>source(&quot;../code/nullalthist.R&quot;)
+library(&quot;oro.nifti&quot;)
+a = readNIfTI(&quot;../data/fstat1.nii.gz&quot;)
+image(a, col = rainbow(15))</code></pre>
+<p><img src="fmri_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+</div>
+<div id="distribution-of-the-f-statistics" class="section level2">
+<h2>Distribution of the F-statistics</h2>
+<p>Under the null hypothesis (no signal), the F-statistics should follow F(2, 175). From the histogram, we see that the F-statistics don’t quite follow the null distribution F(2, 175), which suggests the exsitence of some signals.</p>
+<pre class="r"><code>hist(a[a !=0], n =10000, xlim = c(0, 20), freq = F, main=&quot;Histogram of F-stats&quot;)
+curve(df(x,df1=2, df2=175), from = 0, to = 10, add = T, col = 2)
+legend(&quot;topright&quot;,col=2,lty=1,legend=&quot;F(2,175)&quot;)</code></pre>
+<p><img src="fmri_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>We compute the p-values and use the q-value procedure to control false discovery rate:</p>
+<pre class="r"><code>library(qvalue)
+pp = 1-pf(a[a!=0], df1=2, df2=175)
+qq = qvalue(pp)
+hist(pp, prob=TRUE, main=&quot;histogram of p-values&quot;)</code></pre>
+<p><img src="fmri_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code># estimated null proportion
+qvalue(pp)$pi0</code></pre>
+<pre><code>## [1] 0.4278248</code></pre>
+<pre class="r"><code># proportion of F-stats declared &quot;significant&quot; with threshold qval&lt;0.05
+mean(qq$qvalues&lt;0.05)</code></pre>
+<pre><code>## [1] 0.3129886</code></pre>
+<pre class="r"><code># qvalue&#39;s implicit partition into null and alternative
+lfdr.qv = qq$lfdr
+altnullhist(pp,lfdr.qv,main=&quot;p values: qvalue&quot;,ncz=40,xlab=&quot;p value&quot;,cex.axis=0.8)</code></pre>
+<p><img src="fmri_files/figure-html/unnamed-chunk-3-2.png" width="672" /></p>
+<pre class="r"><code>nullalthist(a[a!=0],lfdr.qv,
+            main=&quot;qvalue&#39;s implicit partition of F-stat \n into null and alternative&quot;,
+            ncz=1000,cex.axis=0.8,xlim=c(0,20),xlab=&quot;F stat&quot;)</code></pre>
+<p><img src="fmri_files/figure-html/unnamed-chunk-3-3.png" width="672" /></p>
+<p>The estimated null proportion by the q-value procedure is over 40%.</p>
+</div>
+<div id="use-ash-to-shrink-the-f-stats" class="section level2">
+<h2>Use ASH to shrink the F-stats</h2>
+<p>Suppose the F statistics follow the distribution <span class="math inline">\(F_j/\alpha_j \sim F(2,175)\)</span>. Under the null, <span class="math inline">\(\alpha_j=1\)</span>. Our shrinkage procedure assumes that <span class="math display">\[\log(\alpha_j) \sim g(\cdot),\]</span> where <span class="math inline">\(g(\cdot)\)</span> is an unimodal distribution with mode at 0.</p>
+<p>We use the empirical Bayes procedure to estimate <span class="math inline">\(g\)</span>, and use the posterior mean of <span class="math inline">\(\log(\alpha_j)\)</span> as a shrunk estimate of <span class="math inline">\(\log(alpha_j)\)</span>.</p>
+<pre class="r"><code>library(ashr)
+test = ash(log(a[a!=0]),1,lik=logF_lik(df1=2,df2=175),mixcompdist=&quot;+uniform&quot;)
+
+# replace the raw signals by the shrunk signals
+a.shrink = a
+a.shrink[a!=0] = exp(test$result$PosteriorMean)
+
+# visualize data after shrinkage
+image(a.shrink, col = rainbow(15), main=&quot;after FASH shrinkage&quot;)</code></pre>
+<p><img src="fmri_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>The estimated <span class="math inline">\(g\)</span> and null proportion by ASH are:</p>
+<pre class="r"><code># estimated g
+test$fitted_g</code></pre>
+<pre><code>## $pi
+##  [1] 2.917120e-02 3.317249e-11 3.106432e-11 2.915824e-11 2.769061e-11
+##  [6] 2.707764e-11 2.821832e-11 3.386877e-11 5.874412e-11 6.006657e-01
+## [11] 1.959622e-01 2.180013e-11 1.716240e-01 2.576860e-03 5.145756e-13
+## [16] 2.092704e-13 1.339479e-13
+## 
+## $a
+##  [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+## 
+## $b
+##  [1]  0.00000000  0.09660125  0.13661480  0.19320250  0.27322959
+##  [6]  0.38640500  0.54645919  0.77280999  1.09291837  1.54561998
+## [11]  2.18583674  3.09123997  4.37167349  6.18247994  8.74334698
+## [16] 12.36495988 17.48669396
+## 
+## attr(,&quot;row.names&quot;)
+##  [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17
+## attr(,&quot;class&quot;)
+## [1] &quot;unimix&quot;</code></pre>
+<pre class="r"><code># estimated null proportion
+test$fitted_g$pi[1]</code></pre>
+<pre><code>## [1] 0.0291712</code></pre>
+<pre class="r"><code># proportion of F-stats declared &quot;significant&quot; with threshold qval&lt;0.05
+mean(test$result$qvalue&lt;0.05)</code></pre>
+<pre><code>## [1] 1</code></pre>
+<pre class="r"><code># ASH&#39;s implicit partition into null and alternative
+lfdr.ash = test$result$lfdr
+nullalthist(a[a!=0],lfdr.ash,
+            main=&quot;ASH&#39;s implicit partition of F-stat \n into null and alternative&quot;,
+            ncz=1000,cex.axis=0.8,xlim=c(0,20),xlab=&quot;F stat&quot;)</code></pre>
+<p><img src="fmri_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+
+<hr>
+<p>
+    This <a href="http://rmarkdown.rstudio.com">R Markdown</a> site was created with <a href="https://github.com/jdblischak/workflowr">workflowr</a>
+</p>
+<hr>
+
+<!-- To enable disqus, uncomment the section below and provide your disqus_shortname -->
+
+<!-- disqus
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'rmarkdown'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+-->
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
