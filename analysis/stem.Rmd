@@ -29,7 +29,7 @@ We use the naive F-test (ANOVA) and FASH to analyze the proportion of variance e
 \[y_{gij} = \mu_g+\beta_{g,c(i)}+\gamma_{g,d(j)}+e_{gij},\]
 where $g,i,j$ are the indices for gene, individual and cell type respectively. $\beta$ and $\gamma$ are random effects for individuals and celltypes respectively. Suppose $\beta_{g,c(i)}\sim N(0,v_{g}^{(ind)}$, $\gamma_{g,c(i)}\sim N(0,v_{g}^(ct)$ and $e_{gij}\sim N(0, v_{g}^{(err)})$, we are interested in estimating the "PVE"s defined as follows:
 \[PVE_g^{(ind)}:=\frac{v_{g}^{(ind)}{v_{g}^{(ind)}+v_{g}^{(ct)}+v_{g}^{(err)}},\]
-\[PVE_g^{(ct)}:=\frac{v_{g}^{(ct)}{v_{g}^(ind)+v_{g}^{(ct)}+v_{g}^{(err)}}\].
+\[PVE_g^{(ct)}:=\frac{v_{g}^{(ct)}{v_{g}^{(ind)}+v_{g}^{(ct)}+v_{g}^{(err)}}.\]
 
 Below are the R functions for our data analysis:
 ```{r}
