@@ -1,0 +1,122 @@
+---
+title: "Use FASH to analyze the stem cell gene expression data"
+output: html_document
+---
+
+## Data description
+Data from Burrows et al (2016), "Genetic Variation, Not Cell Type of Origin, Underlies the Majority of Identifiable Regulatory Differences in iPSCs".
+
+There are four individuals - Ind1, Ind2, Ind3, Ind4
+Each individual has four samples types - Fibroblast, LCL, F-iPSC, L-iPSC
+  -There are three replicates of the L-iPSCs A-C
+
+L-iPSC referes to iPSCs derived from LCLs, F-iPSC refers to iPSCs derived from Fibroblasts.
+
+They were interested in the proportion of variation explained by cell type of origin vs the proportion of variation explained by individual in the iPSCs. They performed a linear mixed model with a fixed effect for cell type of origin (ie L-iPSC vs F-iPSC) and a random effect for individual. This model did no use the LCLs or the Fibroblasts from these individuals. 
+
+## Data analysis
+First we define functions for our data analysis:
+```{r}
+library(limma)
+library(qvalue)
+library(ashr)
+
+# naive F test for a single gene
+get_fstat = function(y,condition1,condition2){
+  fit = lm(y~condition1+condition2)
+  fstat1 = anova(fit)$F[1]
+  fstat2 = anova(fit)$F[2]
+  MST1 = anova(fit)$M[1]
+  MST2 = anova(fit)$M[2]
+  MSE = anova(fit)$M[3]
+  pval1 = unlist(anova(fit)["Pr(>F)"])[1]
+  pval2 = unlist(anova(fit)["Pr(>F)"])[2]
+  res = c(fstat1,fstat2,MST1,MST2,MSE,pval1,pval2)
+  names(res) = c("fstat1","fstat2","MST1","MST2","MSE","pval1","pval2")
+  return(res)
+}
+
+# Variance ratio from the raw MSTs & MSEs
+vr_ftest = function(nsamp,MST,MSE){
+  sigma.c2.hat = pmax(0,(MST-MSE)/nsamp)
+  sigma.e2.hat = MSE
+  return(sigma.c2.hat/sigma.e2.hat)
+}
+
+# Variance ratio = sigma^2/s^2
+# logalpha = (1+nsamp*sigma^2/s^2)
+# So: VR = (exp(logalpha)-1)/nsamp
+vr_plugin = function(nsamp,fashobj){
+  (exp(fashobj$result$PosteriorMean)-1)/nsamp
+}
+
+# main function for computing the PVEs
+pve_analysis = function(data){
+  celltype1 = factor(rep(c("F","L"), each=4))
+  individual1 = factor(rep(1:4, 2))
+  design1 = model.matrix(~celltype1+individual1)
+  
+  # naive F tests
+  ftests = apply(data,1,get_fstat,condition1=celltype1,condition2=individual1)
+  vr.ct.ftest = vr_ftest(4, ftests["MST1",],ftests["MSE",])
+  vr.ind.ftest = vr_ftest(2, ftests["MST2",],ftests["MSE",])
+  
+  # fash
+  lim = lmFit(data, design=design1)
+  lim.ct = eBayes(lim[,2])
+  Fstats.ct = lim.ct$F # shrunk F stats
+  Fpval.ct = lim.ct$F.p.value
+  fash.ct = ash(log(Fstats.ct),1,
+                lik=logF_lik(df1=1,df2=lim.ct$df.total[1]),mixcompdist="+uniform")
+  vr.ct.fash = vr_plugin(4, fash.ct)
+
+  lim.ind = eBayes(lim[,3:5])
+  Fstats.ind = lim.ind$F # shrunk F stats
+  Fpval.ind = lim.ind$F.p.value
+  fash.ind = ash(log(Fstats.ind),1,
+                 lik=logF_lik(df1=3,df2=lim.ind$df.total[1]),mixcompdist="+uniform")
+  vr.ind.fash = vr_plugin(2, fash.ind)
+  
+  # compute PVEs from variance ratios
+  pve.ct.fash = vr.ct.fash/(vr.ct.fash+vr.ind.fash+1)
+  pve.ct.ftest = vr.ct.ftest/(vr.ct.ftest+vr.ind.ftest+1)
+  pve.ind.fash = vr.ind.fash/(vr.ct.fash+vr.ind.fash+1)
+  pve.ind.ftest = vr.ind.ftest/(vr.ct.ftest+vr.ind.ftest+1)
+  
+  # boxplot
+  boxplot(pve.ct.fash, pve.ct.ftest, pve.ind.fash, pve.ind.ftest,
+        names=c("ct.fash","ct.ftest","ind.fash","ind.ftest"),
+        main="PVE of celltypes (ct) and individuals (ind)")
+
+  return(list(pve.ind.ftest=pve.ind.ftest, pve.ind.fash=pve.ind.fash,
+              pve.ct.ftest=pve.ct.ftest, pve.ct.fash=pve.ct.fash))
+}
+```
+
+This dataset has unbalanced design (three L-iPSC replicates but just one F-iPSC sample). However it is not straightforward to use FASH on unbalanced dataset for PVE analysis. Hence we choose an ad-hoc way: each time we simply use one of the three L-iPSC replicates to form a balanced dataset, and compare the results of three trials.
+
+```{r,message=FALSE}
+geneexp = read.delim("../data/OriginGeneExpression_Normalized.txt")
+geneexp.A = geneexp[,c("Ind1.F.iPSC","Ind2.F.iPSC","Ind3.F.iPSC","Ind4.F.iPSC",
+                     "Ind1.L.iPSC.A","Ind2.L.iPSC.A","Ind3.L.iPSC.A","Ind4.L.iPSC.A")]
+geneexp.B = geneexp[,c("Ind1.F.iPSC","Ind2.F.iPSC","Ind3.F.iPSC","Ind4.F.iPSC",
+                     "Ind1.L.iPSC.B","Ind2.L.iPSC.B","Ind3.L.iPSC.B","Ind4.L.iPSC.B")]
+geneexp.C = geneexp[,c("Ind1.F.iPSC","Ind2.F.iPSC","Ind3.F.iPSC","Ind4.F.iPSC",
+                     "Ind1.L.iPSC.C","Ind2.L.iPSC.C","Ind3.L.iPSC.C","Ind4.L.iPSC.C")]
+
+A = pve_analysis(geneexp.A)
+B = pve_analysis(geneexp.B)
+C = pve_analysis(geneexp.C)
+```
+
+According to fash results, both datasets with L-iPSC replicate A or C suggest that gene "ENSG00000198825" is differentially expressed under different celltypes (FDR=0.05), but the dataset with L-iPSC replicate B does not any give significant genes (FDR=0.05). We can check this according to fash results:
+```{r}
+geneexp[which.max(A$pve.ct.fash),]
+```
+
+For individual 2, L-iPSC replicate B's gene expression level is much higher (>1.4) than that of replicates A and C. Compared to typical gene expression variation within L-iPSC replicates, this seems very suspicious. 
+```{r}
+hist(apply(geneexp[,c("Ind2.L.iPSC.A","Ind2.L.iPSC.B","Ind2.L.iPSC.C")],1,sd),
+     xlab="sd of replicates A-C for ind2",
+     main="Histogram of sd")
+```

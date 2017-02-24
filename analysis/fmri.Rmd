@@ -1,0 +1,93 @@
+---
+title: "Shrinkage analysis of fMRI data"
+output: html_document
+---
+
+## Data description and visualization
+This is a 3D dataset. 21 images each of dimension 64x64.
+Each image is a so-called Axial slice i.e imagine salami slicing your brain
+from top of your head to the bottom. Each slice is 6mm thick.
+
+This is the result of an fMRI experiment on a single person. While in the
+scanner the person was stimulated (visual and auditory stimulation). A time
+series of length 180 was collected at each location in the brain and then a
+regression is performed at each location, using the stimulation patterns as
+regressors. 3 other regressors were used which can be thought of as
+confounders. The resulting test statistic is F with df1=2 and df2=175.
+
+```{r}
+source("../code/nullalthist.R")
+library("oro.nifti")
+a = readNIfTI("../data/fstat1.nii.gz")
+image(a, col = rainbow(15))
+```
+
+## Distribution of the F-statistics
+Under the null hypothesis (no signal), the F-statistics should follow F(2, 175). From the histogram, we see that the F-statistics don't quite follow the null distribution F(2, 175), which suggests the exsitence of some signals.
+```{r}
+hist(a[a !=0], n =10000, xlim = c(0, 20), freq = F, main="Histogram of F-stats")
+curve(df(x,df1=2, df2=175), from = 0, to = 10, add = T, col = 2)
+legend("topright",col=2,lty=1,legend="F(2,175)")
+```
+
+We compute the p-values and use the q-value procedure to control false discovery rate:
+```{r}
+library(qvalue)
+pp = 1-pf(a[a!=0], df1=2, df2=175)
+qq = qvalue(pp)
+hist(pp, prob=TRUE, main="histogram of p-values")
+
+# estimated null proportion
+qvalue(pp)$pi0
+
+# proportion of F-stats declared "significant" with threshold qval<0.05
+mean(qq$qvalues<0.05)
+
+# qvalue's implicit partition into null and alternative
+lfdr.qv = qq$lfdr
+altnullhist(pp,lfdr.qv,main="p values: qvalue",ncz=40,xlab="p value",cex.axis=0.8)
+
+nullalthist(a[a!=0],lfdr.qv,
+            main="qvalue's implicit partition of F-stat \n into null and alternative",
+            ncz=1000,cex.axis=0.8,xlim=c(0,20),xlab="F stat")
+```
+
+The estimated null proportion by the q-value procedure is over 40%.
+
+## Use ASH to shrink the F-stats
+Suppose the F statistics follow the distribution $F_j/\alpha_j \sim F(2,175)$. Under the null, $\alpha_j=1$. Our shrinkage procedure assumes that 
+\[\log(\alpha_j) \sim g(\cdot),\]
+where $g(\cdot)$ is an unimodal distribution with mode at 0.
+
+We use the empirical Bayes procedure to estimate $g$, and use the posterior mean of $\log(\alpha_j)$ as a shrunk estimate of $\log(alpha_j)$. 
+
+```{r}
+library(ashr)
+test = ash(log(a[a!=0]),1,lik=logF_lik(df1=2,df2=175),mixcompdist="+uniform")
+
+# replace the raw signals by the shrunk signals
+a.shrink = a
+a.shrink[a!=0] = exp(test$result$PosteriorMean)
+
+# visualize data after shrinkage
+image(a.shrink, col = rainbow(15), main="after FASH shrinkage")
+```
+
+The estimated $g$ and null proportion by ASH are:
+```{r}
+# estimated g
+test$fitted_g
+
+# estimated null proportion
+test$fitted_g$pi[1]
+
+# proportion of F-stats declared "significant" with threshold qval<0.05
+mean(test$result$qvalue<0.05)
+
+# ASH's implicit partition into null and alternative
+lfdr.ash = test$result$lfdr
+nullalthist(a[a!=0],lfdr.ash,
+            main="ASH's implicit partition of F-stat \n into null and alternative",
+            ncz=1000,cex.axis=0.8,xlim=c(0,20),xlab="F stat")
+```
+
