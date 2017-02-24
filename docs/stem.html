@@ -9,6 +9,7 @@
 <meta name="generator" content="pandoc" />
 
 
+<meta name="author" content="Mengyin Lu" />
 
 
 <title>Use FASH to analyze the stem cell gene expression data</title>
@@ -301,10 +302,13 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Use FASH to analyze the stem cell gene expression data</h1>
+<h4 class="author"><em>Mengyin Lu</em></h4>
 
 </div>
 
 
+<p><strong>Last updated:</strong> 2017-02-23</p>
+<p><strong>Code version:</strong> b8f8e38</p>
 <div id="data-description" class="section level2">
 <h2>Data description</h2>
 <p>Data from Burrows et al (2016), “Genetic Variation, Not Cell Type of Origin, Underlies the Majority of Identifiable Regulatory Differences in iPSCs”.</p>
@@ -399,70 +403,102 @@ geneexp.C = geneexp[,c(&quot;Ind1.F.iPSC&quot;,&quot;Ind2.F.iPSC&quot;,&quot;Ind
                      &quot;Ind1.L.iPSC.C&quot;,&quot;Ind2.L.iPSC.C&quot;,&quot;Ind3.L.iPSC.C&quot;,&quot;Ind4.L.iPSC.C&quot;)]
 
 A = pve_analysis(geneexp.A)</code></pre>
-<p><img src="stem_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p><img src="figure/stem.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>B = pve_analysis(geneexp.B)</code></pre>
-<pre><code>## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable
+<pre><code>Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable
 
-## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable
+Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable
 
-## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable
+Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable
 
-## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable
+Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable
 
-## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable
+Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable
 
-## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable
+Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable
 
-## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable</code></pre>
-<p><img src="stem_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable</code></pre>
+<p><img src="figure/stem.Rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>C = pve_analysis(geneexp.C)</code></pre>
-<pre><code>## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable
+<pre><code>Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable
 
-## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable
+Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable
 
-## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable
+Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable
 
-## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable
+Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable
 
-## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable
+Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable
 
-## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable
+Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable
 
-## Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
-## unreliable</code></pre>
-<p><img src="stem_files/figure-html/unnamed-chunk-2-3.png" width="672" /></p>
+Warning in anova.lm(fit): ANOVA F-tests on an essentially perfect fit are
+unreliable</code></pre>
+<p><img src="figure/stem.Rmd/unnamed-chunk-2-3.png" width="672" style="display: block; margin: auto;" /></p>
 <p>According to fash results, both datasets with L-iPSC replicate A or C suggest that gene “ENSG00000198825” is differentially expressed under different celltypes (FDR=0.05), but the dataset with L-iPSC replicate B does not any give significant genes (FDR=0.05). We can check this according to fash results:</p>
 <pre class="r"><code>geneexp[which.max(A$pve.ct.fash),]</code></pre>
-<pre><code>##                 Ind1.F.iPSC Ind2.L.iPSC.C Ind3.L.iPSC.B Ind1.LCL
-## ENSG00000198825     7.97047      6.902654      6.945877 7.151865
-##                 Ind4.L.iPSC.C Ind2.L.iPSC.B Ind4.L.iPSC.A Ind1.Fibroblast
-## ENSG00000198825      6.920788      8.395853      6.922644         7.12799
-##                 Ind1.L.iPSC.A Ind4.Fibroblast Ind2.LCL Ind3.F.iPSC
-## ENSG00000198825      6.997868        7.122821 7.131635    8.029191
-##                 Ind2.Fibroblast Ind3.LCL Ind2.L.iPSC.A Ind4.LCL
-## ENSG00000198825        7.067461 7.097692      6.900132 7.257512
-##                 Ind3.Fibroblast Ind1.L.iPSC.C Ind2.F.iPSC Ind3.L.iPSC.A
-## ENSG00000198825        7.115315      7.044821    7.757269      7.045194
-##                 Ind1.L.iPSC.B Ind4.L.iPSC.B Ind3.L.iPSC.C Ind4.F.iPSC
-## ENSG00000198825      6.969298      6.974893      7.049418    7.896776</code></pre>
+<pre><code>                Ind1.F.iPSC Ind2.L.iPSC.C Ind3.L.iPSC.B Ind1.LCL
+ENSG00000198825     7.97047      6.902654      6.945877 7.151865
+                Ind4.L.iPSC.C Ind2.L.iPSC.B Ind4.L.iPSC.A Ind1.Fibroblast
+ENSG00000198825      6.920788      8.395853      6.922644         7.12799
+                Ind1.L.iPSC.A Ind4.Fibroblast Ind2.LCL Ind3.F.iPSC
+ENSG00000198825      6.997868        7.122821 7.131635    8.029191
+                Ind2.Fibroblast Ind3.LCL Ind2.L.iPSC.A Ind4.LCL
+ENSG00000198825        7.067461 7.097692      6.900132 7.257512
+                Ind3.Fibroblast Ind1.L.iPSC.C Ind2.F.iPSC Ind3.L.iPSC.A
+ENSG00000198825        7.115315      7.044821    7.757269      7.045194
+                Ind1.L.iPSC.B Ind4.L.iPSC.B Ind3.L.iPSC.C Ind4.F.iPSC
+ENSG00000198825      6.969298      6.974893      7.049418    7.896776</code></pre>
 <p>For individual 2, L-iPSC replicate B’s gene expression level is much higher (&gt;1.4) than that of replicates A and C. Compared to typical gene expression variation within L-iPSC replicates, this seems very suspicious.</p>
 <pre class="r"><code>hist(apply(geneexp[,c(&quot;Ind2.L.iPSC.A&quot;,&quot;Ind2.L.iPSC.B&quot;,&quot;Ind2.L.iPSC.C&quot;)],1,sd),
      xlab=&quot;sd of replicates A-C for ind2&quot;,
      main=&quot;Histogram of sd&quot;)</code></pre>
-<p><img src="stem_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p><img src="figure/stem.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session Information</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.3.0 (2016-05-03)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X 10.10.5 (Yosemite)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] limma_3.24.15     ashr_2.1.4        qvalue_2.2.0      oro.nifti_0.5.5.2
+[5] workflowr_0.3.0   rmarkdown_1.3    
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.9       git2r_0.18.0      plyr_1.8.4       
+ [4] bitops_1.0-6      iterators_1.0.8   tools_3.3.0      
+ [7] digest_0.6.12     evaluate_0.10     gtable_0.2.0     
+[10] lattice_0.20-34   Matrix_1.2-7.1    foreach_1.4.3    
+[13] rstudioapi_0.6    yaml_2.1.14       parallel_3.3.0   
+[16] stringr_1.2.0     knitr_1.15.1      REBayes_0.68     
+[19] rprojroot_1.2     grid_3.3.0        ggplot2_2.1.0    
+[22] reshape2_1.4.2    magrittr_1.5      backports_1.0.5  
+[25] scales_0.4.0      codetools_0.2-15  htmltools_0.3.5  
+[28] splines_3.3.0     MASS_7.3-45       abind_1.4-5      
+[31] assertthat_0.1    colorspace_1.2-7  stringi_1.1.2    
+[34] Rmosek_7.1.2      munsell_0.4.3     doParallel_1.0.10
+[37] pscl_1.4.9        truncnorm_1.0-7   SQUAREM_2016.8-2 </code></pre>
 </div>
 
 <hr>

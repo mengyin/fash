@@ -9,6 +9,7 @@
 <meta name="generator" content="pandoc" />
 
 
+<meta name="author" content="Mengyin Lu" />
 
 
 <title>Shrinkage analysis of fMRI data</title>
@@ -301,10 +302,13 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Shrinkage analysis of fMRI data</h1>
+<h4 class="author"><em>Mengyin Lu</em></h4>
 
 </div>
 
 
+<p><strong>Last updated:</strong> 2017-02-23</p>
+<p><strong>Code version:</strong> b8f8e38</p>
 <div id="data-description-and-visualization" class="section level2">
 <h2>Data description and visualization</h2>
 <p>This is a 3D dataset. 21 images each of dimension 64x64. Each image is a so-called Axial slice i.e imagine salami slicing your brain from top of your head to the bottom. Each slice is 6mm thick.</p>
@@ -313,7 +317,7 @@ div.tocify {
 library(&quot;oro.nifti&quot;)
 a = readNIfTI(&quot;../data/fstat1.nii.gz&quot;)
 image(a, col = rainbow(15))</code></pre>
-<p><img src="fmri_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p><img src="figure/fmri.Rmd/unnamed-chunk-1-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="distribution-of-the-f-statistics" class="section level2">
 <h2>Distribution of the F-statistics</h2>
@@ -321,27 +325,27 @@ image(a, col = rainbow(15))</code></pre>
 <pre class="r"><code>hist(a[a !=0], n =10000, xlim = c(0, 20), freq = F, main=&quot;Histogram of F-stats&quot;)
 curve(df(x,df1=2, df2=175), from = 0, to = 10, add = T, col = 2)
 legend(&quot;topright&quot;,col=2,lty=1,legend=&quot;F(2,175)&quot;)</code></pre>
-<p><img src="fmri_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p><img src="figure/fmri.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>We compute the p-values and use the q-value procedure to control false discovery rate:</p>
 <pre class="r"><code>library(qvalue)
 pp = 1-pf(a[a!=0], df1=2, df2=175)
 qq = qvalue(pp)
 hist(pp, prob=TRUE, main=&quot;histogram of p-values&quot;)</code></pre>
-<p><img src="fmri_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="figure/fmri.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code># estimated null proportion
 qvalue(pp)$pi0</code></pre>
-<pre><code>## [1] 0.4278248</code></pre>
+<pre><code>[1] 0.4278248</code></pre>
 <pre class="r"><code># proportion of F-stats declared &quot;significant&quot; with threshold qval&lt;0.05
 mean(qq$qvalues&lt;0.05)</code></pre>
-<pre><code>## [1] 0.3129886</code></pre>
+<pre><code>[1] 0.3129886</code></pre>
 <pre class="r"><code># qvalue&#39;s implicit partition into null and alternative
 lfdr.qv = qq$lfdr
 altnullhist(pp,lfdr.qv,main=&quot;p values: qvalue&quot;,ncz=40,xlab=&quot;p value&quot;,cex.axis=0.8)</code></pre>
-<p><img src="fmri_files/figure-html/unnamed-chunk-3-2.png" width="672" /></p>
+<p><img src="figure/fmri.Rmd/unnamed-chunk-3-2.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>nullalthist(a[a!=0],lfdr.qv,
             main=&quot;qvalue&#39;s implicit partition of F-stat \n into null and alternative&quot;,
             ncz=1000,cex.axis=0.8,xlim=c(0,20),xlab=&quot;F stat&quot;)</code></pre>
-<p><img src="fmri_files/figure-html/unnamed-chunk-3-3.png" width="672" /></p>
+<p><img src="figure/fmri.Rmd/unnamed-chunk-3-3.png" width="672" style="display: block; margin: auto;" /></p>
 <p>The estimated null proportion by the q-value procedure is over 40%.</p>
 </div>
 <div id="use-ash-to-shrink-the-f-stats" class="section level2">
@@ -357,41 +361,73 @@ a.shrink[a!=0] = exp(test$result$PosteriorMean)
 
 # visualize data after shrinkage
 image(a.shrink, col = rainbow(15), main=&quot;after FASH shrinkage&quot;)</code></pre>
-<p><img src="fmri_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p><img src="figure/fmri.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>The estimated <span class="math inline">\(g\)</span> and null proportion by ASH are:</p>
 <pre class="r"><code># estimated g
 test$fitted_g</code></pre>
-<pre><code>## $pi
-##  [1] 2.917120e-02 3.317249e-11 3.106432e-11 2.915824e-11 2.769061e-11
-##  [6] 2.707764e-11 2.821832e-11 3.386877e-11 5.874412e-11 6.006657e-01
-## [11] 1.959622e-01 2.180013e-11 1.716240e-01 2.576860e-03 5.145756e-13
-## [16] 2.092704e-13 1.339479e-13
-## 
-## $a
-##  [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-## 
-## $b
-##  [1]  0.00000000  0.09660125  0.13661480  0.19320250  0.27322959
-##  [6]  0.38640500  0.54645919  0.77280999  1.09291837  1.54561998
-## [11]  2.18583674  3.09123997  4.37167349  6.18247994  8.74334698
-## [16] 12.36495988 17.48669396
-## 
-## attr(,&quot;row.names&quot;)
-##  [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17
-## attr(,&quot;class&quot;)
-## [1] &quot;unimix&quot;</code></pre>
+<pre><code>$pi
+ [1] 2.917120e-02 3.317249e-11 3.106432e-11 2.915824e-11 2.769061e-11
+ [6] 2.707764e-11 2.821832e-11 3.386877e-11 5.874412e-11 6.006657e-01
+[11] 1.959622e-01 2.180013e-11 1.716240e-01 2.576860e-03 5.145756e-13
+[16] 2.092704e-13 1.339479e-13
+
+$a
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+$b
+ [1]  0.00000000  0.09660125  0.13661480  0.19320250  0.27322959
+ [6]  0.38640500  0.54645919  0.77280999  1.09291837  1.54561998
+[11]  2.18583674  3.09123997  4.37167349  6.18247994  8.74334698
+[16] 12.36495988 17.48669396
+
+attr(,&quot;row.names&quot;)
+ [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17
+attr(,&quot;class&quot;)
+[1] &quot;unimix&quot;</code></pre>
 <pre class="r"><code># estimated null proportion
 test$fitted_g$pi[1]</code></pre>
-<pre><code>## [1] 0.0291712</code></pre>
+<pre><code>[1] 0.0291712</code></pre>
 <pre class="r"><code># proportion of F-stats declared &quot;significant&quot; with threshold qval&lt;0.05
 mean(test$result$qvalue&lt;0.05)</code></pre>
-<pre><code>## [1] 1</code></pre>
+<pre><code>[1] 1</code></pre>
 <pre class="r"><code># ASH&#39;s implicit partition into null and alternative
 lfdr.ash = test$result$lfdr
 nullalthist(a[a!=0],lfdr.ash,
             main=&quot;ASH&#39;s implicit partition of F-stat \n into null and alternative&quot;,
             ncz=1000,cex.axis=0.8,xlim=c(0,20),xlab=&quot;F stat&quot;)</code></pre>
-<p><img src="fmri_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><img src="figure/fmri.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session Information</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.3.0 (2016-05-03)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X 10.10.5 (Yosemite)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] limma_3.24.15     ashr_2.1.4        qvalue_2.2.0      oro.nifti_0.5.5.2
+[5] workflowr_0.3.0   rmarkdown_1.3    
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.9       git2r_0.18.0      plyr_1.8.4       
+ [4] bitops_1.0-6      iterators_1.0.8   tools_3.3.0      
+ [7] digest_0.6.12     evaluate_0.10     gtable_0.2.0     
+[10] lattice_0.20-34   Matrix_1.2-7.1    foreach_1.4.3    
+[13] rstudioapi_0.6    yaml_2.1.14       parallel_3.3.0   
+[16] stringr_1.2.0     knitr_1.15.1      REBayes_0.68     
+[19] rprojroot_1.2     grid_3.3.0        ggplot2_2.1.0    
+[22] reshape2_1.4.2    magrittr_1.5      backports_1.0.5  
+[25] scales_0.4.0      codetools_0.2-15  htmltools_0.3.5  
+[28] splines_3.3.0     MASS_7.3-45       abind_1.4-5      
+[31] assertthat_0.1    colorspace_1.2-7  stringi_1.1.2    
+[34] Rmosek_7.1.2      munsell_0.4.3     doParallel_1.0.10
+[37] pscl_1.4.9        truncnorm_1.0-7   SQUAREM_2016.8-2 </code></pre>
 </div>
 
 <hr>

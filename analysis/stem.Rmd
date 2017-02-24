@@ -1,7 +1,19 @@
 ---
 title: "Use FASH to analyze the stem cell gene expression data"
+author: "Mengyin Lu"
 output: html_document
 ---
+
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+**Last updated:** `r Sys.Date()`
+
+**Code version:** `r workflowr::extract_commit(".", 1)$sha1`
 
 ## Data description
 Data from Burrows et al (2016), "Genetic Variation, Not Cell Type of Origin, Underlies the Majority of Identifiable Regulatory Differences in iPSCs".
@@ -119,4 +131,9 @@ For individual 2, L-iPSC replicate B's gene expression level is much higher (>1.
 hist(apply(geneexp[,c("Ind2.L.iPSC.A","Ind2.L.iPSC.B","Ind2.L.iPSC.C")],1,sd),
      xlab="sd of replicates A-C for ind2",
      main="Histogram of sd")
+```
+
+## Session Information
+
+```{r session-info}
 ```

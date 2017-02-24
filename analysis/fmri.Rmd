@@ -1,7 +1,20 @@
 ---
 title: "Shrinkage analysis of fMRI data"
+author: "Mengyin Lu"
 output: html_document
 ---
+
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+**Last updated:** `r Sys.Date()`
+
+**Code version:** `r workflowr::extract_commit(".", 1)$sha1`
+
 
 ## Data description and visualization
 This is a 3D dataset. 21 images each of dimension 64x64.
@@ -91,3 +104,7 @@ nullalthist(a[a!=0],lfdr.ash,
             ncz=1000,cex.axis=0.8,xlim=c(0,20),xlab="F stat")
 ```
 
+## Session Information
+
+```{r session-info}
+```

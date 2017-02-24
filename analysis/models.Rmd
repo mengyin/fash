@@ -1,7 +1,21 @@
 ---
 title: "FASH Models"
-output: pdf_document
+author: "Mengyin Lu"
+output: html_document
 ---
+
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+**Last updated:** `r Sys.Date()`
+
+**Code version:** `r workflowr::extract_commit(".", 1)$sha1`
+
+
 
 ## Models
 Suppose we have a bunch of F-statistics 
@@ -39,4 +53,7 @@ From the plot we know that $\log(F)$ is often negative, and
 \[\log(\hat{F})=\log(\alpha)+\log(F),\]
 so it makes sense that sometimes $\log(\alpha)$ is higher than $\log(\hat{F})$, ie $\alpha$ is higher than the F-statistics. 
 
+## Session Information
 
+```{r session-info}
+```

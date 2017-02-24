@@ -9,6 +9,7 @@
 <meta name="generator" content="pandoc" />
 
 
+<meta name="author" content="Mengyin Lu" />
 
 
 <title>FASH Models</title>
@@ -301,10 +302,13 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">FASH Models</h1>
+<h4 class="author"><em>Mengyin Lu</em></h4>
 
 </div>
 
 
+<p><strong>Last updated:</strong> 2017-02-23</p>
+<p><strong>Code version:</strong> b8f8e38</p>
 <div id="models" class="section level2">
 <h2>Models</h2>
 <p>Suppose we have a bunch of F-statistics <span class="math display">\[\hat{F}_g=\alpha_g \times F_g, \quad ie \quad \log(\hat{F}_g)=log(\alpha_g)+\log(F_g)\]</span> where <span class="math inline">\(F_g\)</span> is a F-distributed random variable with degrees of freedom <span class="math inline">\(df_1, df_2\)</span>. We want to estimate <span class="math inline">\(\alpha_g\)</span> by combining information across F-statistics.</p>
@@ -323,8 +327,40 @@ div.tocify {
 <p>Since we have <span class="math display">\[\log(\hat{F}_g)=\log(\alpha_g)+\log(F_g),\]</span> our goal is similat to “devolution”: estimate <span class="math inline">\(\log(\alpha)\)</span>, given <span class="math inline">\(\hat{F}\)</span> and knowing the distribution of <span class="math inline">\(\log(F)\)</span> (log-F distribution with df1 &amp; df2).</p>
 <p>Note that log-F distribution can be pretty skewed, e.g log-F(1,198) distribution:</p>
 <pre class="r"><code>hist(log(rf(100000,df1=1,df2=198)), 50)</code></pre>
-<p><img src="models_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p><img src="figure/models.Rmd/unnamed-chunk-1-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>From the plot we know that <span class="math inline">\(\log(F)\)</span> is often negative, and <span class="math display">\[\log(\hat{F})=\log(\alpha)+\log(F),\]</span> so it makes sense that sometimes <span class="math inline">\(\log(\alpha)\)</span> is higher than <span class="math inline">\(\log(\hat{F})\)</span>, ie <span class="math inline">\(\alpha\)</span> is higher than the F-statistics.</p>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session Information</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.3.0 (2016-05-03)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X 10.10.5 (Yosemite)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] limma_3.24.15     ashr_2.1.4        qvalue_2.2.0      oro.nifti_0.5.5.2
+[5] workflowr_0.3.0   rmarkdown_1.3    
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.9       git2r_0.18.0      plyr_1.8.4       
+ [4] bitops_1.0-6      iterators_1.0.8   tools_3.3.0      
+ [7] digest_0.6.12     evaluate_0.10     gtable_0.2.0     
+[10] lattice_0.20-34   Matrix_1.2-7.1    foreach_1.4.3    
+[13] rstudioapi_0.6    yaml_2.1.14       parallel_3.3.0   
+[16] stringr_1.2.0     knitr_1.15.1      REBayes_0.68     
+[19] rprojroot_1.2     grid_3.3.0        ggplot2_2.1.0    
+[22] reshape2_1.4.2    magrittr_1.5      backports_1.0.5  
+[25] scales_0.4.0      codetools_0.2-15  htmltools_0.3.5  
+[28] splines_3.3.0     MASS_7.3-45       abind_1.4-5      
+[31] assertthat_0.1    colorspace_1.2-7  stringi_1.1.2    
+[34] Rmosek_7.1.2      munsell_0.4.3     doParallel_1.0.10
+[37] pscl_1.4.9        truncnorm_1.0-7   SQUAREM_2016.8-2 </code></pre>
 </div>
 
 <hr>
